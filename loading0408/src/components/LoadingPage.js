@@ -1,52 +1,51 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from "axios";
 
 function LoadingPage() {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const navigate = useNavigate();
+
     useEffect(() => {
         const sendReservationAndNavigate = async () => {
+            setLoading(true);
+            setError(null);
+
             try {
-                const dummyReservation = {
+                const response = await axios.post("http://localhost:8787/reservation/select", {
+                    uId: 2,
+                    pId: 99,
                     uName: "홍길동",
                     pTitle: "오페라의 유령",
                     pPlace: "예술의전당",
                     pDate: "2025-04-12",
-                    pPrice: 120000
-                };
-                /* 실제 사용 입력값으로 교체!!!!
-                const reservation = {
-                    uName: userInput.name,
-                    pTitle: selectedShow.title,
-                    pPlace: selectedShow.place,
-                    pDate: selectedDate,
-                    pPrice: selectedPrice
-                };
-                */
-
-                const response = await fetch("http://localhost:8787/select", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(dummyReservation)
+                    pPrice: 120000,
+                    pAllSpot: 20
                 });
 
-                const key = await response.text();
+                const key = response.data;
+                console.log("✅ 받은 key:", key);
 
-                // 예약 페이지로 key 포함해서 이동
                 setTimeout(() => {
-                    window.location.href = `/reservation?key=${key}`;
+                    navigate(`/select/${key}`);
                 }, 2000);
-            } catch (error) {
-                console.error("예약 요청 실패:", error);
+            } catch (err) {
+                console.error("❌ 예약 요청 실패:", err);
+                setError("예약 중 오류가 발생했습니다.");
+            } finally {
+                setLoading(false);
             }
         };
 
         sendReservationAndNavigate();
-    }, []);
+    }, [navigate]);
 
     return (
         <div style={{ textAlign: "center", padding: "100px" }}>
             <h2>로딩 중입니다...</h2>
-            <p>예매 정보를 전송하고 있습니다</p>
+            {loading && <p>예매 정보를 전송하고 있습니다</p>}
+            {error && <p style={{ color: "red" }}>{error}</p>}
         </div>
     );
 }
