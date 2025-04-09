@@ -1,74 +1,54 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 function LoadingPage() {
-    const navigate = useNavigate();
     useEffect(() => {
-
-        const fetchData = async () => {
+        const sendReservationAndNavigate = async () => {
             try {
-                // 1. 백엔드에서 최신 예약 정보 fetch
-                const response = await fetch('http://localhost:8787/api/reservation/latest');
-                const data = await response.json();
-                // 2. 받은 데이터를 localStorage에 저장 (선택)
-                localStorage.setItem("reservationData", JSON.stringify(data));
-                // 3. 받아온 rId로 페이지 이동
-                const rId = data.rId;
+                const dummyReservation = {
+                    uName: "홍길동",
+                    pTitle: "오페라의 유령",
+                    pPlace: "예술의전당",
+                    pDate: "2025-04-12",
+                    pPrice: 120000
+                };
+                /* 실제 사용 입력값으로 교체!!!!
+                const reservation = {
+                    uName: userInput.name,
+                    pTitle: selectedShow.title,
+                    pPlace: selectedShow.place,
+                    pDate: selectedDate,
+                    pPrice: selectedPrice
+                };
+                */
 
+                const response = await fetch("http://localhost:8787/select", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(dummyReservation)
+                });
+
+                const key = await response.text();
+
+                // 예약 페이지로 key 포함해서 이동
                 setTimeout(() => {
-                    navigate(`/reservation?rId=${rId}`);
-                }, 2000); // 로딩 애니메이션 시간
+                    window.location.href = `/reservation?key=${key}`;
+                }, 2000);
             } catch (error) {
-                console.error("데이터 로딩 실패:", error);
+                console.error("예약 요청 실패:", error);
             }
         };
-        fetchData();
-    }, [navigate]);
-    return (
-        <div style={{ textAlign: "center", padding: "100px" }}>
-            <h2>로딩 중입니다...</h2>
-            <p>예매 정보를 불러오는 중입니다</p>
-        </div>
-    );
-}
-export default LoadingPage;
 
-
-
-/*
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-function LoadingPage() {
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        // 더미 데이터 생성 (백엔드 없이 테스트용)
-        const dummyData = {
-            rId: "12345",
-            uName: "홍길동",
-            pTitle: "뮤지컬 <레미제라블>",
-            pPlace: "예술의전당",
-            pDate: "2025-05-10",
-            pPrice: 90000
-        };
-
-        // 1. localStorage에 저장
-        localStorage.setItem("reservationData", JSON.stringify(dummyData));
-
-        // 2. 페이지 이동
-        setTimeout(() => {
-            navigate(`/reservation?rId=${dummyData.rId}`);
-        }, 2000); // 로딩 애니메이션 시간
-    }, [navigate]);
+        sendReservationAndNavigate();
+    }, []);
 
     return (
         <div style={{ textAlign: "center", padding: "100px" }}>
             <h2>로딩 중입니다...</h2>
-            <p>예매 정보를 불러오는 중입니다</p>
+            <p>예매 정보를 전송하고 있습니다</p>
         </div>
     );
 }
 
 export default LoadingPage;
- */
